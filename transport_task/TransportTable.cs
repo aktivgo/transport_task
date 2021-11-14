@@ -25,6 +25,11 @@ namespace transport_task
         }
 
         /// <summary>
+        /// Возвращает количество строк в таблице
+        /// </summary>
+        public int Count => _table.Count;
+
+        /// <summary>
         /// Возвращает таблицу
         /// </summary>
         /// <returns></returns>
@@ -79,6 +84,11 @@ namespace transport_task
             {
                 throw new TargetParameterCountException(
                     "Размер устанавливаемого потребителя не совпадает с размером таблицы");
+            }
+
+            for (int i = 0; i < _table.Count; i++)
+            {
+                _table[i].Add(consumer[i]);
             }
         }
 
