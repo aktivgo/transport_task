@@ -43,6 +43,9 @@ namespace transport_task.source
         /// <param name="initialPlanMethod"></param>
         public void Solve(string initialPlanMethod)
         {
+            Console.WriteLine("Исходная задача");
+            PrintTransportTable(_transportTable);
+            Console.WriteLine();
             Preprocessing();
             TransportTable initialPlan = CalculateInitialPlan(initialPlanMethod);
         }
@@ -56,10 +59,17 @@ namespace transport_task.source
             int sumNeeds = 0;
             if (!IsBalanced(ref sumReserves, ref sumNeeds))
             {
+                Console.WriteLine("Задача несбалансированная (" + sumReserves + " != " + sumNeeds + ")");
                 AddDummy(sumReserves, sumNeeds);
+                PrintTransportTable(_transportTable);
+                Console.WriteLine();
+            }
+            else
+            {
+                Console.WriteLine("Задача сбалансированная");
             }
         }
-        
+
         /// <summary>
         /// Проверяет задачу на сбалансированность
         /// </summary>
@@ -70,7 +80,7 @@ namespace transport_task.source
         {
             List<int> reserves = _transportTable.GetReserves();
             List<int> needs = _transportTable.GetNeeds();
-            
+
             for (int i = 0; i < reserves.Count; i++)
             {
                 sumReserves += reserves[i];
@@ -78,7 +88,7 @@ namespace transport_task.source
             }
 
             return sumReserves == sumNeeds;
-        } 
+        }
 
         /// <summary>
         /// Добавление фиктивного поставщика или потребителя
@@ -105,9 +115,10 @@ namespace transport_task.source
             {
                 consumer.Add(new KeyValuePair<int, int>(0, 0));
             }
-            
+
             _transportTable.AddConsumer(consumer);
             _transportTable.AddNeed(need);
+            Console.WriteLine("Добавляем " + _transportTable.GetNeeds().Count + " потребителя");
         }
 
         /// <summary>
@@ -123,6 +134,7 @@ namespace transport_task.source
 
             _transportTable.AddSupplier(supplier);
             _transportTable.AddReserve(reserve);
+            Console.WriteLine("Добавляем " + _transportTable.GetReserves().Count + " поставщика");
         }
 
         /// <summary>
@@ -133,7 +145,130 @@ namespace transport_task.source
         {
             TransportTable plan = _transportTable;
 
+            Console.WriteLine("Нахождение начального плана методом северо-западного угла");
+            PrintTransportTable(plan, 0, 0);
+            Console.WriteLine();
+
+            int iteration = 0;
+            int i = 0, j = 0;
+            while (i < plan.Count || j < plan[0].Count)
+            {
+                iteration++;
+                int price = plan[i][j].Key;
+                int reserve = plan.GetReserves()[i];
+                int need = plan.GetNeeds()[j];
+
+                plan[i][j] = new KeyValuePair<int, int>(price, Math.Min(reserve, need));
+
+                if (reserve < need)
+                {
+                    plan.GetReserves()[i] = 0;
+                    plan.GetNeeds()[j] -= reserve;
+                    i++;
+                }
+                else if (reserve > need)
+                {
+                    plan.GetNeeds()[j] = 0;
+                    plan.GetReserves()[i] -= need;
+                    j++;
+                }
+                else
+                {
+                    plan.GetReserves()[i] = 0;
+                    plan.GetNeeds()[j] = 0;
+                    i++;
+                    j++;
+                }
+
+                Console.WriteLine("Итерация " + iteration);
+                PrintTransportTable(plan, i, j);
+                Console.WriteLine();
+            }
+
             return plan;
+        }
+
+        private void PrintTransportTable(TransportTable plan)
+        {
+            Console.Write("{0,7}", " ");
+            for (int i = 0; i < plan[0].Count; i++)
+            {
+                Console.Write("{0,7}", "B" + (i + 1) + " ");
+            }
+
+            Console.WriteLine();
+
+            for (int i = 0; i < plan.Count; i++)
+            {
+                Console.Write("{0,7}", "A" + (i + 1) + " ");
+
+                for (int j = 0; j < plan[i].Count; j++)
+                {
+                    Console.Write("{0,7}", plan[i][j].Key + "/" + plan[i][j].Value + " ");
+                }
+
+                Console.WriteLine("{0,7}", plan.GetReserves()[i]);
+            }
+
+            Console.Write("{0,7}", " ");
+
+            foreach (var value in plan.GetNeeds())
+            {
+                Console.Write("{0,7}", value + " ");
+            }
+
+            Console.WriteLine();
+        }
+
+        private void PrintTransportTable(TransportTable plan, int indexLine, int indexColumn)
+        {
+            Console.Write("{0,7}", " ");
+            for (int i = 0; i < plan[0].Count; i++)
+            {
+                Console.Write("{0,7}", "B" + (i + 1) + " ");
+            }
+
+            Console.WriteLine();
+
+            for (int i = 0; i < plan.Count; i++)
+            {
+                Console.Write("{0,7}", "A" + (i + 1) + " ");
+
+                for (int j = 0; j < plan[i].Count; j++)
+                {
+                    if (i == indexLine && j == indexColumn)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                    }
+
+                    Console.Write("{0,7}", plan[i][j].Key + "/" + plan[i][j].Value + " ");
+
+                    Console.ResetColor();
+                }
+
+                if (i == indexLine)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                }
+
+                Console.WriteLine("{0,7}", plan.GetReserves()[i]);
+                Console.ResetColor();
+            }
+
+            Console.Write("{0,7}", " ");
+
+            for (int j = 0; j < plan.GetNeeds().Count; j++)
+            {
+                if (j == indexColumn)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                }
+
+                Console.Write("{0,7}", plan.GetNeeds()[j] + " ");
+                Console.ResetColor();
+            }
+
+            Console.WriteLine();
         }
 
         /// <summary>

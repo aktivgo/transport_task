@@ -29,6 +29,12 @@ namespace transport_task.source
         /// </summary>
         public int Count => _table.Count;
 
+        public List<KeyValuePair<int, int>> this[int i]
+        {
+            get => _table[i];
+            set => _table[i] = value;
+        }
+
         /// <summary>
         /// Возвращает таблицу
         /// </summary>
@@ -148,6 +154,30 @@ namespace transport_task.source
         public void AddNeed(int value)
         {
             _needs.Add(value);
+        }
+        
+        public override string ToString()
+        {
+            string result = "";
+
+            for (int i = 0; i < _table.Count; i++)
+            {
+                for (int j = 0; j < _table[i].Count; j++)
+                {
+                    result += _table[i][j].Key + "/" + _table[i][j].Value + " ";
+                }
+
+                result += _reserves[i] + "\n";
+            }
+
+            foreach (var value in _needs)
+            {
+                result += value + " ";
+            }
+
+            result = result.Remove(result.Length - 1);
+
+            return result;
         }
     }
 }

@@ -20,9 +20,15 @@ namespace transport_task.source
                               "1. Северо-западного угла\n" +
                               "2. Минимального элемента");
             int method = int.Parse(Console.ReadLine() ?? throw new InvalidOperationException());
+            Console.WriteLine();
             task.Solve(method == 1 ? "NorthwestCorner" : "MinimalElement");
         }
 
+        /// <summary>
+        /// Считывает транспортную задачу из файла
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
         private static TransportTable ReadTransportTable(string fileName)
         {
             TransportTable transportTable = new TransportTable();
