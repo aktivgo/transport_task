@@ -38,10 +38,13 @@
         <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="Program.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
-        <Compile Include="TransportTable.cs" />
-        <Compile Include="TransportTask.cs" />
+        <Compile Include="source\Program.cs" />
+        <Compile Include="source\TransportTable.cs" />
+        <Compile Include="source\TransportTask.cs" />
+    </ItemGroup>
+    <ItemGroup>
+      <Content Include="data\test_1.txt" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

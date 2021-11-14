@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace transport_task
+namespace transport_task.source
 {
     public class TransportTable
     {

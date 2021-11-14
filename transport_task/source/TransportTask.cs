@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
-namespace transport_task
+namespace transport_task.source
 {
     public class TransportTask
     {
@@ -38,6 +37,10 @@ namespace transport_task
             _transportTable = transportTable ?? throw new ArgumentNullException("Устанавливаемая таблица пустая");
         }
 
+        /// <summary>
+        /// Решает задачу
+        /// </summary>
+        /// <param name="initialPlanMethod"></param>
         public void Solve(string initialPlanMethod)
         {
             Preprocessing();
@@ -45,7 +48,7 @@ namespace transport_task
         }
 
         /// <summary>
-        /// Производит предобработку задачи
+        /// Производит предобработку решения задачи
         /// </summary>
         private void Preprocessing()
         {
@@ -67,9 +70,7 @@ namespace transport_task
         {
             List<int> reserves = _transportTable.GetReserves();
             List<int> needs = _transportTable.GetNeeds();
-
-            sumReserves = 0;
-            sumNeeds = 0;
+            
             for (int i = 0; i < reserves.Count; i++)
             {
                 sumReserves += reserves[i];
@@ -86,32 +87,33 @@ namespace transport_task
         {
             if (sumReserves > sumNeeds)
             {
-                AddDummyConsumer();
+                AddDummyConsumer(sumReserves - sumNeeds);
             }
             else
             {
-                AddDummySupplier();
+                AddDummySupplier(sumNeeds - sumReserves);
             }
         }
 
         /// <summary>
         /// Добавляет фиктивного потребителя
         /// </summary>
-        private void AddDummyConsumer()
+        private void AddDummyConsumer(int need)
         {
             List<KeyValuePair<int, int>> consumer = new List<KeyValuePair<int, int>>();
             for (int i = 0; i < _transportTable.Count; i++)
             {
                 consumer.Add(new KeyValuePair<int, int>(0, 0));
             }
-
+            
             _transportTable.AddConsumer(consumer);
+            _transportTable.AddNeed(need);
         }
 
         /// <summary>
         /// Добавляет фиктивного поставщика
         /// </summary>
-        private void AddDummySupplier()
+        private void AddDummySupplier(int reserve)
         {
             List<KeyValuePair<int, int>> supplier = new List<KeyValuePair<int, int>>();
             for (int i = 0; i < _transportTable.Count; i++)
@@ -120,6 +122,7 @@ namespace transport_task
             }
 
             _transportTable.AddSupplier(supplier);
+            _transportTable.AddReserve(reserve);
         }
 
         /// <summary>
@@ -146,7 +149,7 @@ namespace transport_task
 
 
         /// <summary>
-        /// В
+        /// Считает начальный план
         /// </summary>
         /// <param name="initialPlanMethod"></param>
         /// <returns></returns>
