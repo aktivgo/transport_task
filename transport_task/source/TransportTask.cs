@@ -279,7 +279,128 @@ namespace transport_task.source
         {
             TransportTable plan = _transportTable;
 
+            int iteration = 0;
+            while (!IsSolved(plan))
+            {
+                iteration++;
+                
+                KeyValuePair<int, int> coords = GetIndexOfMinimalElement(plan);
+
+                int price = plan[coords.Key][coords.Value].Key;
+                int reserve = plan.GetReserves()[coords.Key];
+                int need = plan.GetNeeds()[coords.Value];
+
+                plan[coords.Key][coords.Value] = new KeyValuePair<int, int>(price, Math.Min(reserve, need));
+
+                if (reserve < need)
+                {
+                    plan.GetReserves()[coords.Key] = 0;
+                    plan.GetNeeds()[coords.Value] -= reserve;
+                }
+                else if (reserve > need)
+                {
+                    plan.GetNeeds()[coords.Value] = 0;
+                    plan.GetReserves()[coords.Key] -= need;
+                }
+                else
+                {
+                    plan.GetReserves()[coords.Key] = 0;
+                    plan.GetNeeds()[coords.Value] = 0;
+                }
+                
+                Console.WriteLine("Итерация " + iteration);
+                PrintTransportTable(plan, coords.Key, coords.Value);
+                Console.WriteLine();
+            }
+
             return plan;
+        }
+
+        /// <summary>
+        /// Возвращает индекс минимального элемента в таблице
+        /// </summary>
+        /// <param name="transportTable"></param>
+        /// <returns></returns>
+        private KeyValuePair<int, int> GetIndexOfMinimalElement(TransportTable transportTable)
+        {
+            int minEl = int.MaxValue;
+            int indexI = -1, indexJ = -1;
+
+            for (int i = 0; i < transportTable.Count; i++)
+            {
+                if (transportTable.GetReserves()[i] == 0)
+                {
+                    continue;
+                }
+                for (int j = 0; j < transportTable[i].Count; j++)
+                {
+                    if (transportTable.GetNeeds()[j] == 0)
+                    {
+                        continue;
+                    }
+                    if (transportTable[i][j].Key != 0 && transportTable[i][j].Value == 0 && transportTable[i][j].Key < minEl)
+                    {
+                        minEl = transportTable[i][j].Key;
+                        indexI = i;
+                        indexJ = j;
+                    }
+                }
+            }
+
+            if (indexI == -1 || indexJ == -1 && !IsSolved(transportTable))
+            {
+                for (int i = 0; i < transportTable.Count; i++)
+                {
+                    if (transportTable.GetReserves()[i] == 0)
+                    {
+                        continue;
+                    }
+                    for (int j = 0; j < transportTable[i].Count; j++)
+                    {
+                        if (transportTable.GetNeeds()[j] == 0)
+                        {
+                            continue;
+                        }
+                        if (transportTable[i][j].Value == 0 && transportTable[i][j].Key < minEl)
+                        {
+                            minEl = transportTable[i][j].Key;
+                            indexI = i;
+                            indexJ = j;
+                        }
+                    }
+                }
+            }
+
+            return new KeyValuePair<int, int>(indexI, indexJ);
+        }
+
+        /// <summary>
+        /// Проверяет задачу на решенность
+        /// </summary>
+        /// <param name="transportTable"></param>
+        /// <returns></returns>
+        private bool IsSolved(TransportTable transportTable)
+        {
+            List<int> reserves = transportTable.GetReserves();
+            List<int> needs = transportTable.GetNeeds();
+
+            foreach (var item in reserves)
+            {
+                if (item != 0)
+                {
+                    return false;
+                }
+            }
+
+            foreach (var item in needs)
+            {
+                if (item != 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
 
