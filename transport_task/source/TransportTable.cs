@@ -155,7 +155,30 @@ namespace transport_task.source
         {
             _needs.Add(value);
         }
-        
+
+        public List<KeyValuePair<int, int>> GetFilledCells()
+        {
+            if (_table == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            List<KeyValuePair<int, int>> filledCells = new List<KeyValuePair<int, int>>();
+
+            for (int i = 0; i < _table.Count; i++)
+            {
+                for (int j = 0; j < _table[i].Count; j++)
+                {
+                    if (_table[i][j].Value != -1)
+                    {
+                        filledCells.Add(new KeyValuePair<int, int>(i, j));
+                    }
+                }
+            }
+
+            return filledCells;
+        }
+
         public override string ToString()
         {
             string result = "";

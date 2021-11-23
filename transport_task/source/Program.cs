@@ -65,7 +65,7 @@ namespace transport_task.source
                             continue;
                         }
 
-                        pairs.Add(new KeyValuePair<int, int>(int.Parse(values[j]), 0));
+                        pairs.Add(new KeyValuePair<int, int>(int.Parse(values[j]), -1));
                     }
 
                     table.Add(pairs);
