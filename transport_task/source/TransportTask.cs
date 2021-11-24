@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -61,17 +62,26 @@ namespace transport_task.source
                 for (int i = 0; i < dif; i++)
                 {
                     // Добавляем базисные нули
-                    KeyValuePair<int, int> indexMinEl = GetIndexOfMinPriceEl(initialPlan);
+                    KeyValuePair<int, int> indexMinEl = new KeyValuePair<int, int>();
+                    if (initialPlanMethod == "NorthwestCorner")
+                    {
+                        indexMinEl = GetIndexOfMinPriceEl(initialPlan);
+                    }
+                    else
+                    {
+                        indexMinEl = GetIndexOfMaxPriceEl(initialPlan);
+                    }
                     int price = initialPlan[indexMinEl.Key][indexMinEl.Value].Key;
                     initialPlan[indexMinEl.Key][indexMinEl.Value] = new KeyValuePair<int, int>(price, 0);
                     
                     PrintTransportTable(initialPlan, indexMinEl.Key, indexMinEl.Value);
-
                 }
-                Console.WriteLine("План невырожденный");
             }
-
-            Console.WriteLine("Проверка на оптимальность");
+            
+            Console.WriteLine("План невырожденный");
+            Console.WriteLine("\nS = " + CalculatePrice(initialPlan, filledCells));
+            
+            Console.WriteLine("\nПроверка на оптимальность");
             List<List<int>> potentials = new List<List<int>>();
             if (!IsOptimal(initialPlan, ref potentials))
             {
@@ -89,6 +99,28 @@ namespace transport_task.source
                 KeyValuePair<int, int> indexMaxEl = GetIndexOfMaxPotential(potentials);
                 List<KeyValuePair<int, int>> loop = GetLoopByRoot(initialPlan, indexMaxEl);
             }*/
+        }
+
+        private KeyValuePair<int, int> GetIndexOfMaxPriceEl(TransportTable transportTable)
+        {
+            int maxEl = int.MinValue;
+            int indexI = -1, indexJ = -1;
+
+            for (int i = 0; i < transportTable.Count; i++)
+            {
+                for (int j = 0; j < transportTable[i].Count; j++)
+                {
+                    if (transportTable[i][j].Key != 0 && transportTable[i][j].Value == -1 &&
+                        transportTable[i][j].Key > maxEl)
+                    {
+                        maxEl = transportTable[i][j].Key;
+                        indexI = i;
+                        indexJ = j;
+                    }
+                }
+            }
+
+            return new KeyValuePair<int, int>(indexI, indexJ);
         }
 
         private void PrintPotentials(List<List<int>> potentials)
@@ -141,6 +173,18 @@ namespace transport_task.source
             return new KeyValuePair<int, int>(iIndex, jIndex);
         }
 
+        private int CalculatePrice(TransportTable transportTable, List<KeyValuePair<int, int>> filledCells)
+        {
+            int s = 0;
+            
+            foreach (var item in filledCells)
+            {
+                s += transportTable[item.Key][item.Value].Key * transportTable[item.Key][item.Value].Value;
+            }
+
+            return s;
+        }
+
         private bool IsOptimal(TransportTable transportTable, ref List<List<int>> potentials)
         {
             List<KeyValuePair<KeyValuePair<int, int>, int>> equations =
@@ -173,8 +217,10 @@ namespace transport_task.source
             
             u[0] = 0;
 
-            PrintSystemEquations(equations);
             PrintUAndV(u, v);
+            Console.WriteLine();
+            PrintSystemEquations(equations);
+            Console.WriteLine();
             while (!IsPotentialsSolved(u, v))
             {
                 foreach (var item in equations)
@@ -200,6 +246,7 @@ namespace transport_task.source
             }
             
             PrintUAndV(u, v);
+            Console.WriteLine();
 
             bool negative = false;
             for (int i = 0; i < transportTable.Count; i++)
